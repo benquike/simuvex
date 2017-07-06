@@ -61,9 +61,12 @@ class SimState(ana.Storable): # pylint: disable=R0904
                 mode = "symbolic"
             options = o.modes[mode]
 
-        options = set(options)
+        options = self.__preprocess_options(options)
+        add_options = self.__preprocess_options(add_options)
         if add_options is not None:
             options |= add_options
+
+        remove_options = self.__preprocess_options(remove_options)
         if remove_options is not None:
             options -= remove_options
         self.options = options
@@ -113,6 +116,15 @@ class SimState(ana.Storable): # pylint: disable=R0904
         # this is a global condition, applied to all added constraints, memory reads, etc
         self._global_condition = None
         self.ip_constraints = []
+
+    def __preprocess_options(self, opts):
+        if type(opts) is str:
+            return set([opts])
+
+        if type(opts) is list or type(opts) is tuple:
+            return set(opts)
+
+        return None
 
     def _ana_getstate(self):
         s = dict(ana.Storable._ana_getstate(self))
